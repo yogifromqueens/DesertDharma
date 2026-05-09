@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Desert Dharma — Market Validation Survey</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ivory:#faf6f0; --sand:#f0dfc8; --blush:#e8cdb0;
+  --terra:#c4824a; --rust:#a84e24; --ink:#1a1008; --muted:#8a7060;
+}
+body{background:var(--ivory);color:var(--ink);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh}
+
+header{
+  background:var(--ink);padding:28px 52px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.h-logo{font-family:'Cormorant Garamond',serif;font-size:1rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sand)}
+.h-tag{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,170,130,.45)}
+
+.survey-shell{max-width:720px;margin:0 auto;padding:64px 32px 120px}
+
+.survey-intro{margin-bottom:64px;padding-bottom:48px;border-bottom:1px solid var(--blush)}
+.survey-intro h1{
+  font-family:'Cormorant Garamond',serif;font-weight:300;
+  font-size:clamp(1.8rem,4vw,2.8rem);line-height:1.1;margin-bottom:16px;
+}
+.survey-intro h1 em{font-style:italic;color:var(--rust)}
+.survey-intro p{font-size:.88rem;line-height:1.9;color:var(--muted);max-width:520px}
+.disclaimer{margin-top:16px;padding:16px 20px;background:var(--sand);border-left:3px solid var(--terra);font-size:.78rem;line-height:1.7;color:var(--muted)}
+
+/* Progress */
+.progress-bar{height:2px;background:var(--blush);margin-bottom:52px;border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--rust);transition:width .4s ease;border-radius:2px}
+.progress-label{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+
+/* Section */
+.section-label{
+  font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--rust);margin-bottom:24px;padding-bottom:12px;
+  border-bottom:1px solid var(--blush);
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:20px;height:1px;background:var(--rust)}
+.section-num{color:var(--blush);font-size:.55rem}
+
+/* Question */
+.q-block{margin-bottom:40px}
+.q-text{
+  font-family:'Cormorant Garamond',serif;font-size:1.15rem;
+  font-weight:400;line-height:1.4;color:var(--ink);margin-bottom:6px;
+}
+.q-sub{font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.q-required{color:var(--rust);font-size:.8rem}
+
+/* Input types */
+.radio-grid{display:flex;flex-direction:column;gap:0}
+.radio-opt{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 0;border-top:1px solid var(--blush);cursor:pointer;
+  transition:background .15s;
+}
+.radio-opt:last-child{border-bottom:1px solid var(--blush)}
+.radio-opt input[type=radio]{display:none}
+.radio-dot{
+  width:18px;height:18px;border-radius:50%;
+  border:1px solid var(--blush);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .2s;
+}
+.radio-dot::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--rust);display:none}
+.radio-opt.selected .radio-dot{border-color:var(--rust)}
+.radio-opt.selected .radio-dot::after{display:block}
+.radio-opt.selected .radio-label{color:var(--ink)}
+.radio-label{font-size:.88rem;color:var(--muted);transition:color .2s}
+
+.checkbox-grid{display:flex;flex-direction:column;gap:0}
+.check-opt{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 0;border-top:1px solid var(--blush);cursor:pointer;
+}
+.check-opt:last-child{border-bottom:1px solid var(--blush)}
+.check-opt input[type=checkbox]{
+  position:absolute;opacity:0;width:0;height:0;pointer-events:none;
+}
+.check-box{
+  width:18px;height:18px;border:1px solid var(--blush);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .2s,background .2s;
+  pointer-events:none; /* box is visual only — label handles all clicks */
+  user-select:none;
+}
+.check-box::after{content:'✓';font-size:.7rem;color:#fff;display:none}
+.check-opt.selected .check-box{background:var(--rust);border-color:var(--rust)}
+.check-opt.selected .check-box::after{display:block}
+.check-opt.selected .check-label{color:var(--ink)}
+.check-label{font-size:.88rem;color:var(--muted);pointer-events:none;user-select:none;}
+
+/* Scale */
+.scale-wrap{display:flex;gap:0;align-items:center}
+.scale-btn{
+  flex:1;padding:14px 4px;text-align:center;
+  border-top:1px solid var(--blush);border-right:1px solid var(--blush);
+  cursor:pointer;font-size:.85rem;color:var(--muted);
+  transition:background .15s,color .15s;
+  border-bottom:1px solid var(--blush);
+}
+.scale-btn:first-child{border-left:1px solid var(--blush)}
+.scale-btn.selected{background:var(--rust);color:#fff;border-color:var(--rust)}
+.scale-ends{display:flex;justify-content:space-between;margin-top:8px;font-size:.65rem;letter-spacing:.1em;color:var(--muted)}
+
+/* Ranking */
+.rank-list{display:flex;flex-direction:column;gap:0}
+.rank-item{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 16px;border-top:1px solid var(--blush);
+  cursor:grab;background:var(--ivory);transition:background .15s;
+  user-select:none;
+}
+.rank-item:last-child{border-bottom:1px solid var(--blush)}
+.rank-item:active{cursor:grabbing;background:var(--sand)}
+.rank-num{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--sand);display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:var(--muted);flex-shrink:0;
+  font-family:'Cormorant Garamond',serif;font-size:1rem;
+}
+.rank-text{font-size:.88rem;color:var(--ink)}
+.drag-icon{margin-left:auto;color:var(--blush);font-size:.8rem}
+
+/* Text area */
+.open-field{
+  width:100%;background:transparent;border:none;
+  border-bottom:1px solid var(--blush);outline:none;
+  font-size:.88rem;font-family:'DM Sans',sans-serif;font-weight:300;
+  color:var(--ink);padding:12px 0;resize:none;line-height:1.7;
+  transition:border-color .2s;
+  min-height:80px;
+}
+.open-field:focus{border-bottom-color:var(--rust)}
+.open-field::placeholder{color:rgba(138,112,96,.35)}
+
+/* Text input */
+.text-field{
+  width:100%;background:transparent;border:none;
+  border-bottom:1px solid var(--blush);outline:none;
+  font-size:.88rem;font-family:'DM Sans',sans-serif;font-weight:300;
+  color:var(--ink);padding:10px 0;
+  transition:border-color .2s;
+}
+.text-field:focus{border-bottom-color:var(--rust)}
+.text-field::placeholder{color:rgba(138,112,96,.35)}
+
+/* Tradeoff */
+.tradeoff-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+}
+.tradeoff-card{
+  padding:24px 20px;border:1px solid var(--blush);cursor:pointer;
+  transition:all .2s;background:var(--ivory);
+}
+.tradeoff-card:hover{border-color:var(--terra)}
+.tradeoff-card.selected{border-color:var(--rust);background:var(--sand)}
+.tradeoff-card.eliminated{opacity:.35}
+.tradeoff-label{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.tradeoff-desc{font-size:.82rem;line-height:1.65;color:var(--ink)}
+.tradeoff-selected-badge{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--rust);margin-top:10px;display:none}
+.tradeoff-card.selected .tradeoff-selected-badge{display:block}
+
+/* Navigation */
+.nav-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-top:40px;margin-top:40px;border-top:1px solid var(--blush);
+}
+.btn-back{
+  font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+}
+.btn-back:hover{color:var(--ink)}
+.btn-next{
+  font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ivory);background:var(--ink);border:none;
+  padding:16px 36px;cursor:pointer;transition:background .2s;
+}
+.btn-next:hover{background:var(--rust)}
+.btn-next:disabled{opacity:.35;cursor:not-allowed}
+
+/* Steps */
+.step{display:none}
+.step.active{display:block}
+
+/* Success */
+.success-screen{
+  text-align:center;padding:80px 0;display:none;
+}
+.success-screen h2{
+  font-family:'Cormorant Garamond',serif;font-size:2.6rem;
+  font-weight:300;font-style:italic;margin-bottom:16px;
+}
+.success-screen p{font-size:.88rem;color:var(--muted);line-height:1.9;max-width:420px;margin:0 auto}
+.success-icon{font-size:2rem;margin-bottom:24px;display:block}
+
+@media(max-width:600px){
+  header{padding:20px 24px}
+  .survey-shell{padding:40px 20px 80px}
+  .tradeoff-grid{grid-template-columns:1fr}
+  .scale-wrap{gap:0}
+  .scale-btn{padding:10px 2px;font-size:.75rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="h-logo">Desert Dharma</span>
+  <span class="h-tag">Market Validation Survey · Confidential</span>
+</header>
+
+<div class="survey-shell">
+
+  <!-- Intro -->
+  <div class="survey-intro" id="surveyIntro">
+    <h1>Help us understand<br>what you <em>actually</em> need</h1>
+    <p>This survey is part of a real market validation process for Desert Dharma — a women-only desert retreat being developed in Nuweiba, South Sinai. There are no right or wrong answers. We are collecting honest data, not confirmations.</p>
+    <div class="disclaimer">
+      <strong>Note on methodology:</strong> This survey is designed to surface actual travel behavior and willingness to pay, not preferences. Please answer based on what you have done and would genuinely do — not what sounds appealing in theory. Results inform pricing, programming, and investor validation.
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-label" id="progressLabel">Section 1 of 7 — Demographics</div>
+  </div>
+
+  <!-- ═══ STEP 1 — DEMOGRAPHICS ═══ -->
+  <div class="step active" id="step1">
+    <div class="section-label"><span class="section-num">01</span> Demographics</div>
+
+    <div class="q-block">
+      <div class="q-text">What country do you currently live in? <span class="q-required">*</span></div>
+      <input class="text-field" id="q1" type="text" placeholder="e.g. United Arab Emirates"/>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">What is your age range? <span class="q-required">*</span></div>
+      <div class="radio-grid">
+        <label class="radio-opt"><input type="radio" name="q2" value="under25"><div class="radio-dot"></div><span class="radio-label">Under 25</span></label>
+        <label class="radio-opt"><input type="radio" name="q2" value="25-34"><div class="radio-dot"></div><span class="radio-label">25–34</span></label>
+        <label class="radio-opt"><input type="radio" name="q2" value="35-44"><div class="radio-dot"></div><span class="radio-label">35–44</span></label>
+        <label class="radio-opt"><input type="radio" name="q2" value="45-54"><div class="radio-dot"></div><span class="radio-label">45–54</span></label>
+        <label class="radio-opt"><input type="radio" name="q2" value="55+"><div class="radio-dot"></div><span class="radio-label">55+</span></label>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">What best describes your professional situation?</div>
+      <div class="radio-grid">
+        <label class="radio-opt"><input type="radio" name="q3" value="emp"><div class="radio-dot"></div><span class="radio-label">Employed (private sector)</span></label>
+        <label class="radio-opt"><input type="radio" name="q3" value="gov"><div class="radio-dot"></div><span class="radio-label">Employed (government / public sector)</span></label>
+        <label class="radio-opt"><input type="radio" name="q3" value="self"><div class="radio-dot"></div><span class="radio-label">Self-employed / business owner</span></label>
+        <label class="radio-opt"><input type="radio" name="q3" value="stud"><div class="radio-dot"></div><span class="radio-label">Student</span></label>
+        <label class="radio-opt"><input type="radio" name="q3" value="other"><div class="radio-dot"></div><span class="radio-label">Other / prefer not to say</span></label>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <div></div>
+      <button class="btn-next" onclick="nextStep(1)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 2 — TRAVEL BEHAVIOR ═══ -->
+  <div class="step" id="step2">
+    <div class="section-label"><span class="section-num">02</span> Travel Behavior</div>
+
+    <div class="q-block">
+      <div class="q-text">How many times have you traveled internationally in the past 12 months?</div>
+      <div class="radio-grid">
+        <label class="radio-opt"><input type="radio" name="q4" value="0"><div class="radio-dot"></div><span class="radio-label">0 — I didn't travel internationally</span></label>
+        <label class="radio-opt"><input type="radio" name="q4" value="1-2"><div class="radio-dot"></div><span class="radio-label">1–2 trips</span></label>
+        <label class="radio-opt"><input type="radio" name="q4" value="3-5"><div class="radio-dot"></div><span class="radio-label">3–5 trips</span></label>
+        <label class="radio-opt"><input type="radio" name="q4" value="6+"><div class="radio-dot"></div><span class="radio-label">6 or more trips</span></label>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">When you travel, how do you typically book accommodations?</div>
+      <div class="checkbox-grid">
+        <label class="check-opt"><input type="checkbox" name="q5" value="hotel"><div class="check-box"></div><span class="check-label">Luxury / boutique hotel</span></label>
+        <label class="check-opt"><input type="checkbox" name="q5" value="resort"><div class="check-box"></div><span class="check-label">All-inclusive resort</span></label>
+        <label class="check-opt"><input type="checkbox" name="q5" value="airbnb"><div class="check-box"></div><span class="check-label">Airbnb / private rental</span></label>
+        <label class="check-opt"><input type="checkbox" name="q5" value="retreat"><div class="check-box"></div><span class="check-label">Organized retreat or program</span></label>
+        <label class="check-opt"><input type="checkbox" name="q5" value="family"><div class="check-box"></div><span class="check-label">Family / friends' accommodation</span></label>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">Have you ever taken a trip primarily for wellness, rest, or personal reset — where that was the main purpose of the trip?</div>
+      <div class="radio-grid">
+        <label class="radio-opt"><input type="radio" name="q6" value="yes-multi"><div class="radio-dot"></div><span class="radio-label">Yes — I have done this multiple times</span></label>
+        <label class="radio-opt"><input type="radio" name="q6" value="yes-once"><div class="radio-dot"></div><span class="radio-label">Yes — once or twice</span></label>
+        <label class="radio-opt"><input type="radio" name="q6" value="no-int"><div class="radio-dot"></div><span class="radio-label">No, but I have considered it</span></label>
+        <label class="radio-opt"><input type="radio" name="q6" value="no"><div class="radio-dot"></div><span class="radio-label">No, and it is not something I would seek</span></label>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">What is your typical total budget for a solo leisure trip (flights + accommodation + meals)?</div>
+      <div class="radio-grid">
+        <label class="radio-opt"><input type="radio" name="q7" value="u1k"><div class="radio-dot"></div><span class="radio-label">Under $1,000</span></label>
+        <label class="radio-opt"><input type="radio" name="q7" value="1-2k"><div class="radio-dot"></div><span class="radio-label">$1,000–$2,500</span></label>
+        <label class="radio-opt"><input type="radio" name="q7" value="2.5-5k"><div class="radio-dot"></div><span class="radio-label">$2,500–$5,000</span></label>
+        <label class="radio-opt"><input type="radio" name="q7" value="5-10k"><div class="radio-dot"></div><span class="radio-label">$5,000–$10,000</span></label>
+        <label class="radio-opt"><input type="radio" name="q7" value="10k+"><div class="radio-dot"></div><span class="radio-label">Over $10,000</span></label>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="prevStep(2)">← Back</button>
+      <button class="btn-next" onclick="nextStep(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 3 — BUDGET REALITY ═══ -->
+  <div class="step" id="step3">
+    <div class="section-label"><span class="section-num">03</span> Budget Reality</div>
+
+    <div class="q-block">
+      <div class="q-text">Desert Dharma is priced at $250–$500 per night, all-inclusive (meals, programming, accommodation). Without any other information about the retreat, how does this price feel to you?</div>
+      <div class="radio-grid">
+        <label class="radio-opt"><input type="radio" name="q8" value="low"><div class="radio-dot"></div><span class="radio-label">Too low — I would question the quality</span></label>
+        <label class="radio-opt"><input type="radio" name="q8" value="fair"><div class="radio-dot"></div><span class="radio-label">Fair for what is described</span></label>
+        <label class="radio-opt"><input type="radio" name="q8" value="high"><div class="radio-dot"></div><span class="radio-label">High but potentially justifiable</span></label>
+        <label class="radio-opt"><input type="radio" name="q8" value="toohigh"><div class="radio-dot"></div><span class="radio-label">Too high — I would not consider this</span></label>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">At $300/night all-inclusive (meals, private hut, curated daily programming), for a 5-night stay — that is $1,500 total. Would you have paid this in the last 12 months if the product existed?</div>
+      <div class="radio-grid">
+        <label class="radio-opt"><input type="radio" name="q9" value="yes-def"><div class="radio-dot"></div><span class="radio-label">Yes, definitely — this fits my actual spending</span></label>
+        <label class="radio-opt"><input type="radio" name="q9" value="yes-maybe"><div class="radio-dot"></div><span class="radio-label">Probably yes, depending on the specifics</span></label>
+        <label class="radio-opt"><input type="radio" name="q9" value="no-budget"><div class="radio-dot"></div><span class="radio-label">Probably not — budget constraint</span></label>
+        <label class="radio-opt"><input type="radio" name="q9" value="no-pref"><div class="radio-dot"></div><span class="radio-label">No — not how I prefer to spend money on travel</span></label>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">At what price per night would you feel the offering is excellent value for a private hut, all meals included, women-only, curated programming, in a remote desert/sea setting?</div>
+      <div class="radio-grid">
+        <label class="radio-opt"><input type="radio" name="q10" value="u150"><div class="radio-dot"></div><span class="radio-label">Under $150/night</span></label>
+        <label class="radio-opt"><input type="radio" name="q10" value="150-250"><div class="radio-dot"></div><span class="radio-label">$150–$250/night</span></label>
+        <label class="radio-opt"><input type="radio" name="q10" value="250-350"><div class="radio-dot"></div><span class="radio-label">$250–$350/night</span></label>
+        <label class="radio-opt"><input type="radio" name="q10" value="350-500"><div class="radio-dot"></div><span class="radio-label">$350–$500/night</span></label>
+        <label class="radio-opt"><input type="radio" name="q10" value="500+"><div class="radio-dot"></div><span class="radio-label">Over $500/night — price is not a primary factor</span></label>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="prevStep(3)">← Back</button>
+      <button class="btn-next" onclick="nextStep(3)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 4 — TRUST & SAFETY ═══ -->
+  <div class="step" id="step4">
+    <div class="section-label"><span class="section-num">04</span> Trust & Safety</div>
+
+    <div class="q-block">
+      <div class="q-text">How important is the women-only structure to your decision to book a retreat like this?</div>
+      <div class="scale-wrap" id="q11-scale">
+        <div class="scale-btn" onclick="selectScale('q11',1)">1</div>
+        <div class="scale-btn" onclick="selectScale('q11',2)">2</div>
+        <div class="scale-btn" onclick="selectScale('q11',3)">3</div>
+        <div class="scale-btn" onclick="selectScale('q11',4)">4</div>
+        <div class="scale-btn" onclick="selectScale('q11',5)">5</div>
+      </div>
+      <div class="scale-ends"><span>Not important at all</span><span>Absolutely essential</span></div>
+      <input type="hidden" id="q11" value=""/>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">Which of the following would most increase your trust in booking a new, independent retreat property? (Select all that apply)</div>
+      <div class="checkbox-grid">
+        <label class="check-opt"><input type="checkbox" name="q12" value="reviews"><div class="check-box"></div><span class="check-label">Independent reviews from past guests</span></label>
+        <label class="check-opt"><input type="checkbox" name="q12" value="refund"><div class="check-box"></div><span class="check-label">Clear refund and cancellation policy</span></label>
+        <label class="check-opt"><input type="checkbox" name="q12" value="photos"><div class="check-box"></div><span class="check-label">Real photos and video walkthroughs of the property</span></label>
+        <label class="check-opt"><input type="checkbox" name="q12" value="founder"><div class="check-box"></div><span class="check-label">Direct access to or content from the founder</span></label>
+        <label class="check-opt"><input type="checkbox" name="q12" value="press"><div class="check-box"></div><span class="check-label">Press coverage or third-party features</span></label>
+        <label class="check-opt"><input type="checkbox" name="q12" value="wom"><div class="check-box"></div><span class="check-label">Recommendation from someone I know personally</span></label>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">Egypt — specifically Sinai — as a destination. How does that location affect your perception of the concept?</div>
+      <div class="radio-grid">
+        <label class="radio-opt"><input type="radio" name="q13" value="pos"><div class="radio-dot"></div><span class="radio-label">Positively — it is part of the appeal</span></label>
+        <label class="radio-opt"><input type="radio" name="q13" value="neutral"><div class="radio-dot"></div><span class="radio-label">Neutral — location is not a deterrent or draw</span></label>
+        <label class="radio-opt"><input type="radio" name="q13" value="concern"><div class="radio-dot"></div><span class="radio-label">Some concern — I would want more safety information</span></label>
+        <label class="radio-opt"><input type="radio" name="q13" value="neg"><div class="radio-dot"></div><span class="radio-label">Negatively — I would not consider Egypt as a destination</span></label>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="prevStep(4)">← Back</button>
+      <button class="btn-next" onclick="nextStep(4)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 5 — POSITIONING & DECISION DRIVERS ═══ -->
+  <div class="step" id="step5">
+    <div class="section-label"><span class="section-num">05</span> Positioning & Decision Drivers</div>
+
+    <div class="q-block">
+      <div class="q-text">Rank the following factors by how much they would influence your decision to book this retreat. Drag to reorder — most important at the top.</div>
+      <div class="q-sub">Drag items up or down. Position 1 = most important.</div>
+      <div class="rank-list" id="rankList">
+        <div class="rank-item" draggable="true" data-val="privacy"><div class="rank-num">1</div><span class="rank-text">Privacy & women-only guarantee</span><span class="drag-icon">⠿</span></div>
+        <div class="rank-item" draggable="true" data-val="quality"><div class="rank-num">2</div><span class="rank-text">Quality of accommodation & interiors</span><span class="drag-icon">⠿</span></div>
+        <div class="rank-item" draggable="true" data-val="location"><div class="rank-num">3</div><span class="rank-text">Location & natural environment</span><span class="drag-icon">⠿</span></div>
+        <div class="rank-item" draggable="true" data-val="price"><div class="rank-num">4</div><span class="rank-text">Price & value for money</span><span class="drag-icon">⠿</span></div>
+        <div class="rank-item" draggable="true" data-val="program"><div class="rank-num">5</div><span class="rank-text">Programming & curated activities</span><span class="drag-icon">⠿</span></div>
+        <div class="rank-item" draggable="true" data-val="social"><div class="rank-num">6</div><span class="rank-text">Community & social connection with other guests</span><span class="drag-icon">⠿</span></div>
+      </div>
+    </div>
+
+    <div class="q-block" style="margin-top:40px">
+      <div class="q-text">FORCED TRADEOFF: If you could only have one of the following, which would you choose?</div>
+      <div class="q-sub">Select exactly one. This reveals your true priority.</div>
+      <div class="tradeoff-grid" id="tradeoffGrid">
+        <div class="tradeoff-card" onclick="selectTradeoff('privacy')">
+          <div class="tradeoff-label">Privacy First</div>
+          <div class="tradeoff-desc">A basic, clean private hut in a verified women-only setting. Minimal but safe. $150/night.</div>
+          <div class="tradeoff-selected-badge">✦ Selected</div>
+        </div>
+        <div class="tradeoff-card" onclick="selectTradeoff('luxury')">
+          <div class="tradeoff-label">Luxury First</div>
+          <div class="tradeoff-desc">A beautifully designed mixed-gender high-end retreat. Exceptional interiors and service. $300/night.</div>
+          <div class="tradeoff-selected-badge">✦ Selected</div>
+        </div>
+        <div class="tradeoff-card" onclick="selectTradeoff('price')">
+          <div class="tradeoff-label">Price First</div>
+          <div class="tradeoff-desc">A shared women-only space with communal rooms and bathrooms. Affordable and safe. $60/night.</div>
+          <div class="tradeoff-selected-badge">✦ Selected</div>
+        </div>
+        <div class="tradeoff-card" onclick="selectTradeoff('location')">
+          <div class="tradeoff-label">Location First</div>
+          <div class="tradeoff-desc">An exceptional natural setting — sea and mountain — but mixed-gender, mid-range quality. $200/night.</div>
+          <div class="tradeoff-selected-badge">✦ Selected</div>
+        </div>
+      </div>
+      <input type="hidden" id="q14-tradeoff" value=""/>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="prevStep(5)">← Back</button>
+      <button class="btn-next" onclick="nextStep(5)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 6 — OBJECTIONS ═══ -->
+  <div class="step" id="step6">
+    <div class="section-label"><span class="section-num">06</span> Objections & Barriers</div>
+
+    <div class="q-block">
+      <div class="q-text">What would most likely prevent you from booking a trip like this? (Select all that apply)</div>
+      <div class="checkbox-grid">
+        <label class="check-opt"><input type="checkbox" name="q15" value="price"><div class="check-box"></div><span class="check-label">Price is too high relative to alternatives</span></label>
+        <label class="check-opt"><input type="checkbox" name="q15" value="time"><div class="check-box"></div><span class="check-label">I don't have 4–7 continuous days free</span></label>
+        <label class="check-opt"><input type="checkbox" name="q15" value="solo"><div class="check-box"></div><span class="check-label">I prefer not to travel solo to new destinations</span></label>
+        <label class="check-opt"><input type="checkbox" name="q15" value="trust"><div class="check-box"></div><span class="check-label">I don't know enough about this property to trust it</span></label>
+        <label class="check-opt"><input type="checkbox" name="q15" value="egypt"><div class="check-box"></div><span class="check-label">Egypt / Sinai as a destination concerns me</span></label>
+        <label class="check-opt"><input type="checkbox" name="q15" value="need"><div class="check-box"></div><span class="check-label">I don't feel the need for a dedicated rest trip</span></label>
+        <label class="check-opt"><input type="checkbox" name="q15" value="none"><div class="check-box"></div><span class="check-label">Nothing — I would genuinely consider booking</span></label>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">How many days in advance do you typically plan and book leisure travel?</div>
+      <div class="radio-grid">
+        <label class="radio-opt"><input type="radio" name="q16" value="last"><div class="radio-dot"></div><span class="radio-label">Last minute — under 2 weeks</span></label>
+        <label class="radio-opt"><input type="radio" name="q16" value="1mo"><div class="radio-dot"></div><span class="radio-label">1–4 weeks ahead</span></label>
+        <label class="radio-opt"><input type="radio" name="q16" value="2-3mo"><div class="radio-dot"></div><span class="radio-label">1–3 months ahead</span></label>
+        <label class="radio-opt"><input type="radio" name="q16" value="3-6mo"><div class="radio-dot"></div><span class="radio-label">3–6 months ahead</span></label>
+        <label class="radio-opt"><input type="radio" name="q16" value="6mo+"><div class="radio-dot"></div><span class="radio-label">6+ months ahead</span></label>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="prevStep(6)">← Back</button>
+      <button class="btn-next" onclick="nextStep(6)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 7 — OPEN ENDED ═══ -->
+  <div class="step" id="step7">
+    <div class="section-label"><span class="section-num">07</span> Open Questions</div>
+    <div class="q-block" style="margin-bottom:8px;padding-bottom:12px;border-bottom:1px solid var(--blush)">
+      <div class="q-text" style="font-size:.88rem;color:var(--muted);font-family:'DM Sans',serif">These three questions have no right answers. Please be direct. Vague or surface-level answers are less useful than honest ones.</div>
+    </div>
+
+    <div class="q-block" style="margin-top:32px">
+      <div class="q-text">1. Describe the last time you felt genuinely depleted — mentally or physically. What did you do about it, and did it work?</div>
+      <div class="q-sub">This helps us understand real behavior around rest, not stated preferences.</div>
+      <textarea class="open-field" id="open1" placeholder="Write openly. There is no correct answer."></textarea>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">2. What would have to be true about a retreat for you to tell a close friend about it unprompted?</div>
+      <div class="q-sub">This reveals your actual quality threshold and word-of-mouth triggers.</div>
+      <textarea class="open-field" id="open2" placeholder="Be specific — what would cross the threshold?"></textarea>
+    </div>
+
+    <div class="q-block">
+      <div class="q-text">3. What is the most honest objection you have to a concept like Desert Dharma — the thing you wouldn't necessarily say out loud in a focus group?</div>
+      <div class="q-sub">Honest objections are the most valuable data we can collect.</div>
+      <textarea class="open-field" id="open3" placeholder="Say the quiet part out loud."></textarea>
+    </div>
+
+    <!-- Contact -->
+    <div class="q-block" style="margin-top:40px;padding-top:32px;border-top:1px solid var(--blush)">
+      <div class="q-text">Optional: Leave your email to receive founding circle access when we open</div>
+      <div class="q-sub">No spam. One email only — when we open for bookings.</div>
+      <input class="text-field" id="email" type="email" placeholder="your@email.com"/>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="prevStep(7)">← Back</button>
+      <button class="btn-next" onclick="submitSurvey()">Submit →</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <span class="success-icon">✦</span>
+    <h2>Thank you for your honesty.</h2>
+    <p>Your responses have been recorded. If you left your email, you will hear from us once — when founding circle access opens.<br><br>Desert Dharma is being built on data like this, not assumptions.</p>
+  </div>
+
+</div><!-- /survey-shell -->
+
+<script>
+let currentStep = 1;
+const totalSteps = 7;
+const scales = {};
+let tradeoffSelected = null;
+let dragSrc = null;
+
+// Progress update
+function updateProgress(step){
+  const pct = Math.round(((step-1)/totalSteps)*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  const labels = ['Demographics','Travel Behavior','Budget Reality','Trust & Safety','Decision Drivers','Objections','Open Questions'];
+  document.getElementById('progressLabel').textContent = `Section ${step} of ${totalSteps} — ${labels[step-1]}`;
+}
+
+// Navigation
+function nextStep(step){
+  document.getElementById('step'+step).classList.remove('active');
+  currentStep = step+1;
+  if(currentStep <= totalSteps){
+    document.getElementById('step'+currentStep).classList.add('active');
+    updateProgress(currentStep);
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function prevStep(step){
+  document.getElementById('step'+step).classList.remove('active');
+  currentStep = step-1;
+  document.getElementById('step'+currentStep).classList.add('active');
+  updateProgress(currentStep);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Radio styling
+document.querySelectorAll('.radio-opt').forEach(opt => {
+  opt.addEventListener('click', function(){
+    const name = this.querySelector('input').getAttribute('name');
+    document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+      r.closest('.radio-opt').classList.remove('selected');
+    });
+    this.classList.add('selected');
+    this.querySelector('input').checked = true;
+  });
+});
+
+// Checkbox — prevent double-fire from label→input browser behaviour
+document.querySelectorAll('.check-opt').forEach(function(opt) {
+  opt.addEventListener('click', function(e) {
+    // Stop the browser from re-firing a click on the hidden input,
+    // which would toggle the state back to its original value
+    e.preventDefault();
+    var isSelected = this.classList.toggle('selected');
+    var inp = this.querySelector('input[type=checkbox]');
+    if (inp) inp.checked = isSelected;
+  });
+  // Also handle touchend for mobile — prevents 300ms delay and ghost clicks
+  opt.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    var isSelected = this.classList.toggle('selected');
+    var inp = this.querySelector('input[type=checkbox]');
+    if (inp) inp.checked = isSelected;
+  });
+});
+
+// Scale
+function selectScale(name, val){
+  scales[name] = val;
+  document.getElementById(name).value = val;
+  const btns = document.querySelectorAll(`#${name}-scale .scale-btn`);
+  btns.forEach((b,i) => b.classList.toggle('selected', i < val));
+}
+
+// Tradeoff
+function selectTradeoff(val){
+  tradeoffSelected = val;
+  document.getElementById('q14-tradeoff').value = val;
+  document.querySelectorAll('.tradeoff-card').forEach(c => {
+    c.classList.remove('selected','eliminated');
+    if(c.getAttribute('onclick').includes(val)) c.classList.add('selected');
+    else c.classList.add('eliminated');
+  });
+}
+
+// Drag ranking
+const rankList = document.getElementById('rankList');
+rankList.addEventListener('dragstart', e => {
+  dragSrc = e.target.closest('.rank-item');
+  e.dataTransfer.effectAllowed = 'move';
+});
+rankList.addEventListener('dragover', e => {
+  e.preventDefault();
+  const target = e.target.closest('.rank-item');
+  if(target && target !== dragSrc){
+    const rect = target.getBoundingClientRect();
+    const mid = rect.top + rect.height/2;
+    if(e.clientY < mid) rankList.insertBefore(dragSrc, target);
+    else rankList.insertBefore(dragSrc, target.nextSibling);
+    updateRankNumbers();
+  }
+});
+function updateRankNumbers(){
+  document.querySelectorAll('.rank-item').forEach((item,i) => {
+    item.querySelector('.rank-num').textContent = i+1;
+  });
+}
+
+// ── SUBMIT — collect all data and POST to Google Sheets ─────────────
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwU30QwuRBtL29WkS6tgQ6dEnXvsv9M3VCSv-cqIHlobMXGAf3ubrkteseI4HkQ6Wyd/exec";
+// ^ After deploying Google Apps Script, replace the string above with your Web App URL
+
+function collectAllData() {
+  const country    = document.getElementById('q1').value.trim();
+  const ageRange   = document.querySelector('input[name="q2"]:checked')?.value || "";
+  const profession = document.querySelector('input[name="q3"]:checked')?.value || "";
+  const intlTrips      = document.querySelector('input[name="q4"]:checked')?.value || "";
+  const bookingTypes   = [...document.querySelectorAll('input[name="q5"]:checked')].map(el => el.value);
+  const wellnessTravel = document.querySelector('input[name="q6"]:checked')?.value || "";
+  const tripBudget     = document.querySelector('input[name="q7"]:checked')?.value || "";
+  const pricePerception  = document.querySelector('input[name="q8"]:checked')?.value || "";
+  const wouldPay1500     = document.querySelector('input[name="q9"]:checked')?.value || "";
+  const priceGoodValueAt = document.querySelector('input[name="q10"]:checked')?.value || "";
+  const womenOnlyImportance = document.getElementById('q11').value || "";
+  const trustBuilders   = [...document.querySelectorAll('input[name="q12"]:checked')].map(el => el.value);
+  const egyptPerception = document.querySelector('input[name="q13"]:checked')?.value || "";
+  const rankingOrder    = [...document.querySelectorAll('#rankList .rank-item')].map(el => el.dataset.val);
+  const tradeoffChoice  = document.getElementById('q14-tradeoff').value || "";
+  const barriers        = [...document.querySelectorAll('input[name="q15"]:checked')].map(el => el.value);
+  const bookingLeadTime = document.querySelector('input[name="q16"]:checked')?.value || "";
+  const open1   = document.getElementById('open1').value.trim();
+  const open2   = document.getElementById('open2').value.trim();
+  const open3   = document.getElementById('open3').value.trim();
+  const email   = document.getElementById('email').value.trim();
+  const source    = new URLSearchParams(window.location.search).get('utm_source') || 'direct';
+  const userAgent = navigator.userAgent;
+  return { country, ageRange, profession, intlTrips, bookingTypes, wellnessTravel,
+    tripBudget, pricePerception, wouldPay1500, priceGoodValueAt, womenOnlyImportance,
+    trustBuilders, egyptPerception, rankingOrder, tradeoffChoice, barriers,
+    bookingLeadTime, open1, open2, open3, email, source, userAgent };
+}
+
+async function submitSurvey() {
+  const btn = document.querySelector('#step7 .btn-next');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  const payload = collectAllData();
+
+  // Show success immediately — don't make user wait on network
+  document.getElementById('step7').classList.remove('active');
+  document.getElementById('successScreen').style.display = 'block';
+  updateProgress(7);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // POST to Google Apps Script in background
+  if (SCRIPT_URL && SCRIPT_URL !== "PASTE_YOUR_SCRIPT_URL_HERE") {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',  // Required for Apps Script — response will be opaque
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      console.warn('Survey POST failed (data not lost — check console):', err);
+      console.log('Unsubmitted payload:', JSON.stringify(payload, null, 2));
+    }
+  } else {
+    // Dev mode: no URL set — log full payload to browser console
+    console.log('%c[DEV] Survey payload (SCRIPT_URL not configured):', 'color:#C3592B;font-weight:bold');
+    console.log(JSON.stringify(payload, null, 2));
+  }
+}
+
+updateProgress(1);
+</script>
+</body>
+</html>
